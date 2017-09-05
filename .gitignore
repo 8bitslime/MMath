@@ -1,0 +1,7 @@
+﻿
+# .gitignore made for use in Visual Studio.
+
+*.filters
+*.lastbuildstate
+*.vcxproj
+*.log
