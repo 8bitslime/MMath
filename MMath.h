@@ -26,6 +26,10 @@ Parameters:
 	s - scale
 	t - translation
 
+	f - first
+	l - last
+	t - time (S/LERP only)
+
 	aspect - aspect ratio (width / height)
 	fovY - field of view of the Y axis ( fovX calculated with 2 * atan(aspect * tan(fovY / 2)) )
 	near - near Z clipping plane
@@ -142,6 +146,9 @@ extern "C" {
 	#pragma endregion Types
 
 	#define mm_sqrt(var) ((scalar)sqrt(var))
+	#define mm_acos(var) ((scalar)acos(var))
+	#define mm_asin(var) ((scalar)asin(var))
+	#define mm_atan(var) ((scalar)atan(var))
 	#define mm_cos(var)  ((scalar)cos(var))
 	#define mm_sin(var)  ((scalar)sin(var))
 	#define mm_tan(var)  ((scalar)tan(var))
@@ -151,12 +158,14 @@ extern "C" {
 	#define mm_pi  ((scalar)3.141592653589793)
 	#define mm_hpi ((scalar)1.570796326794896)
 
+	#pragma region Helper_Functions
 	MMATH_INLINE scalar radians(scalar degrees) {
 		return degrees * (scalar)0.017453292519943295; //PI / 180
 	}
 	MMATH_INLINE scalar degrees(scalar radians) {
 		return radians * (scalar)57.29577951308232; //180 / PI
 	}
+	#pragma endregion Helper_Functions
 
 	//Vector Math
 	#pragma region Vec_TempDef
@@ -250,6 +259,12 @@ extern "C" {
 		} \
 		return ret; \
 	}
+	#define GENFUNC_VECLERP(integer) \
+	MMATH_INLINE vec##integer vec##integer##Lerp(vec##integer f, vec##integer l, scalar t) { \
+		vec##integer dir = vec##integer##Sub(l, f); \
+		vec##integer ret = vec##integer##MulScalar(dir, t); \
+		return vec##integer##Add(ret, f); \
+	}
 	#define GENFUNC_VECSTANDARD(integer) \
 		GENFUNC_VECADDSCALAR(integer) \
 		GENFUNC_VECSUBSCALAR(integer) \
@@ -261,7 +276,8 @@ extern "C" {
 		GENFUNC_VECDIV(integer); \
 		GENFUNC_VECDOT(integer); \
 		GENFUNC_VECLEN(integer); \
-		GENFUNC_VECNORM(integer);
+		GENFUNC_VECNORM(integer); \
+		GENFUNC_VECLERP(integer);
 	#pragma endregion Vec_TempDef
 
 	#pragma region Vec2_Functions
@@ -284,11 +300,6 @@ extern "C" {
 	}
 	MMATH_INLINE vec4 vec3ToVec4(vec3 a, scalar w) {
 		vec4 ret = {a.x, a.y, a.z, w};
-		return ret;
-	}
-	MMATH_INLINE quat vec3ToQuat(vec3 a) {
-		quat ret;
-
 		return ret;
 	}
 	MMATH_INLINE vec3 vec3Cross(vec3 a, vec3 b) {
@@ -322,41 +333,13 @@ extern "C" {
 		return vec4Length(a.vec);
 	}
 	MMATH_INLINE quat quatNormalize(quat a) {
-		quat ret;
-		ret.vec = vec4Normalize(a.vec);
-		return ret;
+		return (quat) { .vec = vec4Normalize(a.vec) };
 	}
-	MMATH_INLINE quat quatInverse(quat a) {
-		quat ret = {
-			.x = (-a.x) / (a.x * a.x),
-			.y = (-a.y) / (a.y * a.y),
-			.z = (-a.z) / (a.z * a.z),
-			.w = (a.w)  / (a.w * a.w)
-		};
-		return ret;
+	MMATH_INLINE quat quatMulScalar(quat a, scalar b) {
+		return (quat) { .vec = vec4MulScalar(a.vec, b) };
 	}
-	MMATH_INLINE quat quatEurler(scalar pitch, scalar yaw, scalar roll) {
-		quat ret;
-
-		scalar cy = mm_cos(yaw   * 0.5f);
-		scalar sy = mm_sin(yaw   * 0.5f);
-		scalar cr = mm_cos(roll  * 0.5f);
-		scalar sr = mm_sin(roll  * 0.5f);
-		scalar cp = mm_cos(pitch * 0.5f);
-		scalar sp = mm_sin(pitch * 0.5f);
-
-		ret.x = cy * sr * cp - sy * cr * sp;
-		ret.y = cy * cr * sp + sy * sr * cp;
-		ret.z = sy * cr * cp - cy * sr * sp;
-		ret.w = cy * cr * cp + sy * sr * sp;
-
-		return ret;
-	}
-	MMATH_INLINE quat quatAxisAngle(vec3 axis, scalar r) {
-		scalar a2 = r * (scalar)0.5;
-		quat ret;
-		ret.axis = vec3MulScalar(axis, mm_sin(a2));
-		ret.w    = mm_cos(a2);
+	MMATH_INLINE quat quatAdd(quat a, quat b) {
+		quat ret = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
 		return ret;
 	}
 	MMATH_INLINE quat quatMul(quat a, quat b) {
@@ -382,6 +365,52 @@ extern "C" {
 		vec3 ret = vec3Add(b, twcross);
 		return ret;
 	}
+	MMATH_INLINE quat quatNegate(quat a) {
+		quat ret = {-a.x, -a.y, -a.z, -a.w};
+		return ret;
+	}
+	MMATH_INLINE quat quatConjugate(quat a) {
+		quat ret = {-a.x, -a.y, -a.z, a.w};
+		return ret;
+	}
+	MMATH_INLINE quat quatInverse(quat a) {
+		quat ret = quatConjugate(a);
+		scalar length = quatLength(a);
+		if (length == (scalar)1.0) {
+			return ret;
+		} else {
+			scalar l2 = (scalar)1.0 / (length * length);
+			ret.x *= l2;
+			ret.y *= l2;
+			ret.z *= l2;
+			ret.w *= l2;
+			return ret;
+		}
+	}
+	MMATH_INLINE quat quatEurler(scalar pitch, scalar yaw, scalar roll) {
+		quat ret;
+
+		scalar cy = mm_cos(yaw   * 0.5f);
+		scalar sy = mm_sin(yaw   * 0.5f);
+		scalar cr = mm_cos(roll  * 0.5f);
+		scalar sr = mm_sin(roll  * 0.5f);
+		scalar cp = mm_cos(pitch * 0.5f);
+		scalar sp = mm_sin(pitch * 0.5f);
+
+		ret.x = cy * sr * cp - sy * cr * sp;
+		ret.y = cy * cr * sp + sy * sr * cp;
+		ret.z = sy * cr * cp - cy * sr * sp;
+		ret.w = cy * cr * cp + sy * sr * sp;
+
+		return ret;
+	}
+	MMATH_INLINE quat quatAxisAngle(vec3 axis, scalar r) {
+		scalar a2 = r * (scalar)0.5;
+		quat ret;
+		ret.axis = vec3MulScalar(axis, mm_sin(a2));
+		ret.w    = mm_cos(a2);
+		return ret;
+	}
 	MMATH_INLINE mat3 quatToMat3(quat a) {
 		scalar x2 = 2 * a.x * a.x,
 			   y2 = 2 * a.y * a.y,
@@ -399,6 +428,29 @@ extern "C" {
 		};
 		return ret;
 	}
+	MMATH_INLINE quat quatSlerp(quat f, quat l, scalar t) {
+		quat ret;
+		scalar dot = vec4Dot(f.vec, l.vec);
+
+		if (dot < (scalar)0.0) {
+			dot = -dot;
+			ret = quatInverse(l);
+		} else {
+			ret = l;
+		}
+
+		if (dot < (float)0.95) {
+			scalar angle = mm_acos(dot);
+			f = quatMulScalar(f, mm_sin(angle * (1 - t)));
+			ret = quatMulScalar(ret, mm_sin(angle * t));
+			ret = quatAdd(f, ret);
+			ret = quatMulScalar(ret, (scalar)1.0 / mm_sin(angle));
+		} else {
+			ret.vec = vec4Lerp(f.vec, ret.vec, t);
+		}
+
+		return ret;
+	}
 	#pragma endregion Quaternion_Functions
 
 	//Matrix Math
@@ -408,10 +460,8 @@ extern "C" {
 	#define GENFUNC_MATTRPOSE(integer) \
 	MMATH_INLINE mat##integer mat##integer##Transpose(mat##integer a) { \
 		mat##integer ret; \
-		for (int x = 0; x < integer; x++) { \
-			for (int y = 0; y < integer; y++) { \
-				ret.row[x].data[y] = a.row[y].data[x]; \
-			} \
+		MAT_FOR(integer) { \
+			ret.row[x].data[y] = a.row[y].data[x]; \
 		} \
 		return ret; \
 	}
@@ -577,14 +627,14 @@ extern "C" {
 		};
 		return ret;
 	}
-	MMATH_INLINE mat4 mat4Perspective(scalar aspect, scalar fovY, scalar near, scalar far) {
+	MMATH_INLINE mat4 mat4Perspective(scalar aspect, scalar fovY, scalar zNear, scalar zFar) {
 		scalar f   = (scalar)1.0 / mm_tan(fovY * 0.5);
-		scalar nf  = (scalar)1.0 / (near - far);
+		scalar nf  = (scalar)1.0 / (zNear - zFar);
 		mat4 ret = {
-			f/aspect, 0,  0,             0,
-			0,        f,  0,             0,
-			0,        0, (far+near)*nf, -1,
-			0,        0, (2*far*near)*nf,0
+			f/aspect, 0,  0,               0,
+			0,        f,  0,               0,
+			0,        0, (zFar+zNear)*nf, -1,
+			0,        0, (2*zFar*zNear)*nf,0
 		};
 		return ret;
 	}
