@@ -9,8 +9,6 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-//Open Ended math library v0.1
-
 /*
 Library cheat sheet:
 
@@ -145,6 +143,7 @@ extern "C" {
 	} mat4;
 	#pragma endregion Types
 
+	#pragma region Helper_Functions
 	#define mm_sqrt(var) ((scalar)sqrt(var))
 	#define mm_acos(var) ((scalar)acos(var))
 	#define mm_asin(var) ((scalar)asin(var))
@@ -158,7 +157,7 @@ extern "C" {
 	#define mm_pi  ((scalar)3.141592653589793)
 	#define mm_hpi ((scalar)1.570796326794896)
 
-	#pragma region Helper_Functions
+	//Functions
 	MMATH_INLINE scalar radians(scalar degrees) {
 		return degrees * (scalar)0.017453292519943295; //PI / 180
 	}
@@ -170,7 +169,7 @@ extern "C" {
 	//Vector Math
 	#pragma region Vec_TempDef
 	#define VEC_FOR(integer) for (int i = 0; i < integer; i++)
-	#define GENFUNC_VECADDSCALAR(integer) \
+	#define MMATH_GENFUNC_VECADDSCALAR(integer) \
 	MMATH_INLINE vec##integer vec##integer##AddScalar(vec##integer a, scalar b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -178,7 +177,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECSUBSCALAR(integer) \
+	#define MMATH_GENFUNC_VECSUBSCALAR(integer) \
 	MMATH_INLINE vec##integer vec##integer##SubScalar(vec##integer a, scalar b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -186,7 +185,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECMULSCALAR(integer) \
+	#define MMATH_GENFUNC_VECMULSCALAR(integer) \
 	MMATH_INLINE vec##integer vec##integer##MulScalar(vec##integer a, scalar b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -194,7 +193,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECDIVSCALAR(integer) \
+	#define MMATH_GENFUNC_VECDIVSCALAR(integer) \
 	MMATH_INLINE vec##integer vec##integer##DivScalar(vec##integer a, scalar b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -202,7 +201,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECADD(integer) \
+	#define MMATH_GENFUNC_VECADD(integer) \
 	MMATH_INLINE vec##integer vec##integer##Add(vec##integer a, vec##integer b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -210,7 +209,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECSUB(integer) \
+	#define MMATH_GENFUNC_VECSUB(integer) \
 	MMATH_INLINE vec##integer vec##integer##Sub(vec##integer a, vec##integer b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -218,7 +217,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECMUL(integer) \
+	#define MMATH_GENFUNC_VECMUL(integer) \
 	MMATH_INLINE vec##integer vec##integer##Mul(vec##integer a, vec##integer b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -226,7 +225,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECDIV(integer) \
+	#define MMATH_GENFUNC_VECDIV(integer) \
 	MMATH_INLINE vec##integer vec##integer##Div(vec##integer a, vec##integer b) { \
 		vec##integer ret; \
 		VEC_FOR(integer) { \
@@ -234,7 +233,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECDOT(integer) \
+	#define MMATH_GENFUNC_VECDOT(integer) \
 	MMATH_INLINE scalar vec##integer##Dot(vec##integer a, vec##integer b) { \
 		scalar ret = 0; \
 		VEC_FOR(integer) { \
@@ -242,7 +241,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECLEN(integer) \
+	#define MMATH_GENFUNC_VECLEN(integer) \
 	MMATH_INLINE scalar vec##integer##Length(vec##integer a) { \
 		scalar sum = 0; \
 		VEC_FOR(integer) { \
@@ -250,7 +249,7 @@ extern "C" {
 		} \
 		return mm_sqrt(sum); \
 	}
-	#define GENFUNC_VECNORM(integer) \
+	#define MMATH_GENFUNC_VECNORM(integer) \
 	MMATH_INLINE vec##integer vec##integer##Normalize(vec##integer a) { \
 		scalar len = vec##integer##Length(a); \
 		vec##integer ret; \
@@ -259,29 +258,29 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_VECLERP(integer) \
+	#define MMATH_GENFUNC_VECLERP(integer) \
 	MMATH_INLINE vec##integer vec##integer##Lerp(vec##integer f, vec##integer l, scalar t) { \
 		vec##integer dir = vec##integer##Sub(l, f); \
 		vec##integer ret = vec##integer##MulScalar(dir, t); \
 		return vec##integer##Add(ret, f); \
 	}
-	#define GENFUNC_VECSTANDARD(integer) \
-		GENFUNC_VECADDSCALAR(integer) \
-		GENFUNC_VECSUBSCALAR(integer) \
-		GENFUNC_VECMULSCALAR(integer) \
-		GENFUNC_VECDIVSCALAR(integer) \
-		GENFUNC_VECADD(integer); \
-		GENFUNC_VECSUB(integer); \
-		GENFUNC_VECMUL(integer); \
-		GENFUNC_VECDIV(integer); \
-		GENFUNC_VECDOT(integer); \
-		GENFUNC_VECLEN(integer); \
-		GENFUNC_VECNORM(integer); \
-		GENFUNC_VECLERP(integer);
+	#define MMATH_GENFUNC_VECSTANDARD(integer) \
+		MMATH_GENFUNC_VECADDSCALAR(integer) \
+		MMATH_GENFUNC_VECSUBSCALAR(integer) \
+		MMATH_GENFUNC_VECMULSCALAR(integer) \
+		MMATH_GENFUNC_VECDIVSCALAR(integer) \
+		MMATH_GENFUNC_VECADD(integer); \
+		MMATH_GENFUNC_VECSUB(integer); \
+		MMATH_GENFUNC_VECMUL(integer); \
+		MMATH_GENFUNC_VECDIV(integer); \
+		MMATH_GENFUNC_VECDOT(integer); \
+		MMATH_GENFUNC_VECLEN(integer); \
+		MMATH_GENFUNC_VECNORM(integer); \
+		MMATH_GENFUNC_VECLERP(integer);
 	#pragma endregion Vec_TempDef
 
 	#pragma region Vec2_Functions
-	GENFUNC_VECSTANDARD(2);
+	MMATH_GENFUNC_VECSTANDARD(2);
 	MMATH_INLINE vec3 vec2ToVec3(vec2 a, scalar z) {
 		vec3 ret = {a.x, a.y, z};
 		return ret;
@@ -293,7 +292,7 @@ extern "C" {
 	#pragma endregion Vec2_Functions
 
 	#pragma region Vec3_Functions
-	GENFUNC_VECSTANDARD(3);
+	MMATH_GENFUNC_VECSTANDARD(3);
 	MMATH_INLINE vec2 vec3ToVec2(vec3 a) {
 		vec2 ret = {a.x, a.y};
 		return ret;
@@ -312,7 +311,7 @@ extern "C" {
 	#pragma endregion Vec3_Functions
 
 	#pragma region Vec4_Functions
-	GENFUNC_VECSTANDARD(4);
+	MMATH_GENFUNC_VECSTANDARD(4);
 	MMATH_INLINE vec2 vec4ToVec2(vec4 a) {
 		vec2 ret = {a.x, a.y};
 		return ret;
@@ -457,7 +456,7 @@ extern "C" {
 	#pragma region Mat_TempDef
 	#define MAT_FOR_FLAT(integer) for (int i = 0; i < integer * integer; i++)
 	#define MAT_FOR(integer) for (int x = 0; x < integer; x++) for (int y = 0; y < integer; y++)
-	#define GENFUNC_MATTRPOSE(integer) \
+	#define MMATH_GENFUNC_MATTRPOSE(integer) \
 	MMATH_INLINE mat##integer mat##integer##Transpose(mat##integer a) { \
 		mat##integer ret; \
 		MAT_FOR(integer) { \
@@ -465,7 +464,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATIDENT(integer) \
+	#define MMATH_GENFUNC_MATIDENT(integer) \
 	MMATH_INLINE mat##integer mat##integer##Identity(void) { \
 		mat##integer ret = {0}; \
 		for (int i = 0; i < integer * integer; i += integer + 1) { \
@@ -473,7 +472,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATDIAG(integer) \
+	#define MMATH_GENFUNC_MATDIAG(integer) \
 	MMATH_INLINE mat##integer mat##integer##Diagonal(scalar f) { \
 		mat##integer ret = {0}; \
 		for (int i = 0; i < integer * integer; i += integer + 1) { \
@@ -481,7 +480,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATADD(integer) \
+	#define MMATH_GENFUNC_MATADD(integer) \
 	MMATH_INLINE mat##integer mat##integer##Add(mat##integer a, mat##integer b) { \
 		mat##integer ret; \
 		MAT_FOR_FLAT(integer) { \
@@ -489,7 +488,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATSUB(integer) \
+	#define MMATH_GENFUNC_MATSUB(integer) \
 	MMATH_INLINE mat##integer mat##integer##Sub(mat##integer a, mat##integer b) { \
 		mat##integer ret; \
 		MAT_FOR_FLAT(integer) { \
@@ -497,7 +496,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATMUL(integer) \
+	#define MMATH_GENFUNC_MATMUL(integer) \
 	MMATH_INLINE mat##integer mat##integer##Mul(mat##integer a, mat##integer b) { \
 		mat##integer ret = {0}; \
 		MAT_FOR(integer) { \
@@ -507,7 +506,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATMULSCALAR(integer) \
+	#define MMATH_GENFUNC_MATMULSCALAR(integer) \
 	MMATH_INLINE mat##integer mat##integer##MulScalar(mat##integer a, scalar b) { \
 		mat##integer ret; \
 		MAT_FOR_FLAT(integer) { \
@@ -515,7 +514,7 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATMULVEC(integer) \
+	#define MMATH_GENFUNC_MATMULVEC(integer) \
 	MMATH_INLINE vec##integer mat##integer##MulVec##integer(mat##integer a, vec##integer b) { \
 		vec##integer ret = {0}; \
 		VEC_FOR(integer) { \
@@ -525,19 +524,19 @@ extern "C" {
 		} \
 		return ret; \
 	}
-	#define GENFUNC_MATSTANDARD(integer) \
-		GENFUNC_MATTRPOSE(integer); \
-		GENFUNC_MATIDENT(integer); \
-		GENFUNC_MATDIAG(integer); \
-		GENFUNC_MATADD(integer); \
-		GENFUNC_MATSUB(integer); \
-		GENFUNC_MATMUL(integer); \
-		GENFUNC_MATMULSCALAR(integer); \
-		GENFUNC_MATMULVEC(integer);
+	#define MMATH_GENFUNC_MATSTANDARD(integer) \
+		MMATH_GENFUNC_MATTRPOSE(integer); \
+		MMATH_GENFUNC_MATIDENT(integer); \
+		MMATH_GENFUNC_MATDIAG(integer); \
+		MMATH_GENFUNC_MATADD(integer); \
+		MMATH_GENFUNC_MATSUB(integer); \
+		MMATH_GENFUNC_MATMUL(integer); \
+		MMATH_GENFUNC_MATMULSCALAR(integer); \
+		MMATH_GENFUNC_MATMULVEC(integer);
 	#pragma endregion Mat_TempDef
 	
 	#pragma region Mat2_Functions
-	GENFUNC_MATSTANDARD(2);
+	MMATH_GENFUNC_MATSTANDARD(2);
 	MMATH_INLINE mat3 mat2ToMat3(mat2 a) {
 		mat3 ret = {
 			a.x0, a.y0, 0,
@@ -558,7 +557,7 @@ extern "C" {
 	#pragma endregion Mat2_Functions
 
 	#pragma region Mat3_Functions
-	GENFUNC_MATSTANDARD(3);
+	MMATH_GENFUNC_MATSTANDARD(3);
 	MMATH_INLINE mat3 mat3RotateX(scalar r) {
 		scalar c = mm_cos(r);
 		scalar s = mm_sin(r);
@@ -608,7 +607,7 @@ extern "C" {
 	#pragma endregion Mat3_Functions
 
 	#pragma region Mat4_Functions
-	GENFUNC_MATSTANDARD(4);
+	MMATH_GENFUNC_MATSTANDARD(4);
 	MMATH_INLINE mat4 mat4Scale(vec3 s) {
 		mat4 ret = {
 			s.x, 0,   0,   0,
@@ -635,6 +634,23 @@ extern "C" {
 			0,        f,  0,               0,
 			0,        0, (zFar+zNear)*nf, -1,
 			0,        0, (2*zFar*zNear)*nf,0
+		};
+		return ret;
+	}
+	MMATH_INLINE mat4 mat4LookAt(vec3 eye, vec3 center, vec3 up) {
+		vec3 z = vec3Normalize( vec3Sub(center, eye) );
+		vec3 x = vec3Normalize( vec3Cross(up, z) );
+		vec3 y = vec3Cross(z, x);
+
+		scalar ndotx = -vec3Dot(x, eye);
+		scalar ndoty = -vec3Dot(y, eye);
+		scalar ndotz = -vec3Dot(z, eye);
+
+		mat4 ret = {
+			x.x,   y.x,   z.x,   0,
+			x.y,   y.y,   z.y,   0,
+			x.z,   y.z,   z.z,   0,
+			ndotx, ndoty, ndotz, 1
 		};
 		return ret;
 	}
