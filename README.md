@@ -1,10 +1,10 @@
 # Welcome to MMath!
 MMath is a single-header math library made in C for use with OpenGL and other similar graphics APIs.
 
-###### Quick Refernces:
-- [Features](#Features)
-- [On the to-do list](#On-the-to-do-list)
-- [How to use MMath](#How-to-use-MMath)
+###### Quick refernces:
+- [Features](#features)
+- [On the to-do list](#on-the-to-do-list)
+- [How to use MMath](#how-to-use-mmath)
 
 ###### Additional information:
 
