@@ -97,6 +97,9 @@ Parameters:
 	far - far Z clipping plane
 
 	axis - unit vector
+
+	parent - parent of a struct in relative space
+	child  - in space relative to parent
 	
 !WARNINGS! (If you're having a problem, read this first):
 	-Unit vector parameters are NOT checked, make sure they are normalized!
@@ -368,6 +371,9 @@ extern "C" {
 	MMATH_GENFUNC_VECSTANDARD(3);
 	MMATH_CONST vec3 vec3Zero     = { 0, 0, 0 };
 	MMATH_CONST vec3 vec3Identity = { 1, 1, 1 };
+	MMATH_CONST vec3 vec3XAxis    = { 1, 0, 0 };
+	MMATH_CONST vec3 vec3YAxis    = { 0, 1, 0 };
+	MMATH_CONST vec3 vec3ZAxis    = { 0, 0, 1 };
 	MMATH_INLINE vec2 vec3ToVec2(vec3 a) {
 		vec2 ret = {a.x, a.y};
 		return ret;
@@ -777,6 +783,18 @@ extern "C" {
 		ret = mat4Mul( mat3ToMat4( quatToMat3(t.rot) ), ret );
 		return ret;
 	}
+	MMATH_INLINE transform transformMul(transform a, transform b) {
+		vec3 pos = quatMulVec3(a.rot, b.pos);
+		pos = vec3Mul(pos, a.scale);
+		transform ret = {
+			vec3Add(pos, a.pos),
+			vec3Mul(a.scale, b.scale),
+			quatMul(a.rot, b.rot)
+		};
+		return ret;
+	}
+	//TODO: Solve transform inverse
+	//Oh boy that's going to be a hard one
 	MMATH_INLINE transform transformLerp(transform f, transform l, scalar t) {
 		transform ret = {
 			vec3Lerp(f.pos, l.pos, t),
