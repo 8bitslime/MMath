@@ -4,6 +4,7 @@ MMath is a single-header math library made in C for use with OpenGL and other si
 ###### Quick refernces:
 - [Features](#features)
 - [On the to-do list](#on-the-to-do-list)
+- [License](#license)
 - [How to use MMath](#how-to-use-mmath)
 
 ###### Additional information:
@@ -33,7 +34,12 @@ Some documentation is provided at the top of [`MMath.h`](./MMath.h), but more wi
 
 ---
 
+### License
+MMath is released, free of charge, under the [MIT license](./LICENSE). This means that you are allowed to use MMath for both private and commercial projects as well as modify and redistribute it. You are not obligated to credit MMath in your projects, but it would be greatly appreciated.
+
+---
+
 ### How to use MMath
 To add MMath to your project, simply put the [`MMath.h`](./MMath.h) header file in your project's include directory and use `#include "MMath.h"` anywhere math is required.
 
-If you require *double* precision, add the line `#define MMATH_DOUBLE` before including [`MMath.h`](./MMath.h).
+If you require *double precision*, add the line `#define MMATH_DOUBLE` before including [`MMath.h`](./MMath.h).
