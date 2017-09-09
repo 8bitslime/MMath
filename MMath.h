@@ -12,14 +12,77 @@
 /*
 Library cheat sheet:
 
+Functions:
+	Most functions are subject-verb, i.e. vec3 Mul (...)
+	                                 subject^   ^verb
+	Some functions are subject-verb-subject i.e. vec3 Mul Scalar(...)
+
+	Subjects:
+		Scalar:
+			-float  (without MMATH_DOUBLE defined)
+			-dobule (with MMATH_DOUBLE defined)
+
+		Vectors:
+			-vec2 (x, y)
+			-vec3 (x, y, z | r, g, b)
+			-vec4 (x, y, z, w | r, g, b, a)
+		To add a vector of dimension N, do:
+			**This typedef is very specific**
+			typedef struct vecN_t {
+				union {
+					scalar data[N];
+					struct {
+						scalar x, y, z... N;
+					};
+				};
+			} vecN;
+			MMATH_GENFUN_VECSTANDARD(N);
+
+		Quaternion:
+			-quat (x, y, z, w)
+
+		Matrics (square only!):
+			-mat2
+			-mat3
+			-mat4
+		To add a matrix of dimension N * N, do:
+			**You MUST have created the vector of N dimensions before the matrix!**
+			**This typedef is very specific**
+			typedef struct matN_t {
+				union {
+					scalar data[N * N];
+					vecN row[N]
+					struct {
+						scalar x0, y0, z0, ... N
+						scalar x1, y1, z1, ... N
+						scalar x2, y2, z2, ... N
+							...
+						scalar xN, yN, zN, ... N
+					};
+				};
+			} vecN;
+			MMATH_GENFUN_MATSTANDARD(N);
+
+		Transformations:
+			-transform (position, scale, rotation)
+
+	Verbs:
+		To    - converts one subject to another
+		Add   - add one subject to another
+		Sub   - subtract one subject from another
+		Mul   - multiply one subject by another
+		Div   - divide one subject by another
+		Cross - cross product between subjects
+		Dot   - dot product between subjects
+		Lerp  - linearly interpolates one subject to another
+		Slerp - spherically linearly interpolates one subject to another
+
 Parameters:
 	a - left side operand
 	b - right side operand
 
 	r - angle in radians
-	pitch \
-	yaw    |- angles in radians
-	roll  /
+	e - euler angles (x = pitch, y = yaw, z = roll)
 
 	s - scale
 	t - translation
@@ -35,7 +98,7 @@ Parameters:
 
 	axis - unit vector
 	
-WARNINGS (If you're having a problem, read this first):
+!WARNINGS! (If you're having a problem, read this first):
 	-Unit vector parameters are NOT checked, make sure they are normalized!
 		-vecXNormalize(vecX a)
 
@@ -54,6 +117,7 @@ extern "C" {
 	#include <math.h>
 
 	#define MMATH_INLINE inline
+	#define MMATH_CONST static const
 
 	//Types
 	#pragma region Types
@@ -62,6 +126,7 @@ extern "C" {
 	#else
 	typedef float scalar;
 	#endif
+
 	typedef struct vec2_t {
 		union {
 			scalar data[2];
@@ -141,6 +206,12 @@ extern "C" {
 			};
 		};
 	} mat4;
+
+	typedef struct transform_t {
+		vec3 pos;
+		vec3 scale;
+		quat rot;
+	} transform;
 	#pragma endregion Types
 
 	#pragma region Helper_Functions
@@ -159,10 +230,10 @@ extern "C" {
 
 	//Functions
 	MMATH_INLINE scalar radians(scalar degrees) {
-		return degrees * (scalar)0.017453292519943295; //PI / 180
+		return degrees * (scalar)0.0174532925199432; //PI / 180
 	}
 	MMATH_INLINE scalar degrees(scalar radians) {
-		return radians * (scalar)57.29577951308232; //180 / PI
+		return radians * (scalar)57.295779513082325; //180 / PI
 	}
 	#pragma endregion Helper_Functions
 
@@ -281,6 +352,8 @@ extern "C" {
 
 	#pragma region Vec2_Functions
 	MMATH_GENFUNC_VECSTANDARD(2);
+	MMATH_CONST vec2 vec2Zero     = { 0, 0 };
+	MMATH_CONST vec2 vec2Identity = { 1, 1 };
 	MMATH_INLINE vec3 vec2ToVec3(vec2 a, scalar z) {
 		vec3 ret = {a.x, a.y, z};
 		return ret;
@@ -293,6 +366,8 @@ extern "C" {
 
 	#pragma region Vec3_Functions
 	MMATH_GENFUNC_VECSTANDARD(3);
+	MMATH_CONST vec3 vec3Zero     = { 0, 0, 0 };
+	MMATH_CONST vec3 vec3Identity = { 1, 1, 1 };
 	MMATH_INLINE vec2 vec3ToVec2(vec3 a) {
 		vec2 ret = {a.x, a.y};
 		return ret;
@@ -312,6 +387,8 @@ extern "C" {
 
 	#pragma region Vec4_Functions
 	MMATH_GENFUNC_VECSTANDARD(4);
+	MMATH_CONST vec4 vec4Zero     = { 0, 0, 0, 0 };
+	MMATH_CONST vec4 vec4Identity = { 1, 1, 1, 1 };
 	MMATH_INLINE vec2 vec4ToVec2(vec4 a) {
 		vec2 ret = {a.x, a.y};
 		return ret;
@@ -328,6 +405,7 @@ extern "C" {
 
 	//Quaternion Math
 	#pragma region Quaternion_Functions
+	MMATH_CONST quat quatIndentity = { 0, 0, 0, 1 };
 	MMATH_INLINE scalar quatLength(quat a) {
 		return vec4Length(a.vec);
 	}
@@ -386,15 +464,15 @@ extern "C" {
 			return ret;
 		}
 	}
-	MMATH_INLINE quat quatEurler(scalar pitch, scalar yaw, scalar roll) {
+	MMATH_INLINE quat quatEurler(vec3 e) {
 		quat ret;
 
-		scalar cy = mm_cos(yaw   * 0.5f);
-		scalar sy = mm_sin(yaw   * 0.5f);
-		scalar cr = mm_cos(roll  * 0.5f);
-		scalar sr = mm_sin(roll  * 0.5f);
-		scalar cp = mm_cos(pitch * 0.5f);
-		scalar sp = mm_sin(pitch * 0.5f);
+		scalar cy = mm_cos(e.y * (scalar)0.5);
+		scalar sy = mm_sin(e.y * (scalar)0.5);
+		scalar cr = mm_cos(e.z * (scalar)0.5);
+		scalar sr = mm_sin(e.z * (scalar)0.5);
+		scalar cp = mm_cos(e.x * (scalar)0.5);
+		scalar sp = mm_sin(e.x * (scalar)0.5);
 
 		ret.x = cy * sr * cp - sy * cr * sp;
 		ret.y = cy * cr * sp + sy * sr * cp;
@@ -526,17 +604,21 @@ extern "C" {
 	}
 	#define MMATH_GENFUNC_MATSTANDARD(integer) \
 		MMATH_GENFUNC_MATTRPOSE(integer); \
-		MMATH_GENFUNC_MATIDENT(integer); \
 		MMATH_GENFUNC_MATDIAG(integer); \
 		MMATH_GENFUNC_MATADD(integer); \
 		MMATH_GENFUNC_MATSUB(integer); \
 		MMATH_GENFUNC_MATMUL(integer); \
 		MMATH_GENFUNC_MATMULSCALAR(integer); \
 		MMATH_GENFUNC_MATMULVEC(integer);
+		//MMATH_GENFUNC_MATIDENT(integer);
 	#pragma endregion Mat_TempDef
 	
 	#pragma region Mat2_Functions
 	MMATH_GENFUNC_MATSTANDARD(2);
+	MMATH_CONST mat2 mat2Identity = {
+		1, 0,
+		0, 1
+	};
 	MMATH_INLINE mat3 mat2ToMat3(mat2 a) {
 		mat3 ret = {
 			a.x0, a.y0, 0,
@@ -558,6 +640,11 @@ extern "C" {
 
 	#pragma region Mat3_Functions
 	MMATH_GENFUNC_MATSTANDARD(3);
+	MMATH_CONST mat3 mat3Identity = {
+		1, 0, 0,
+		0, 1, 0,
+		0, 0, 1
+	};
 	MMATH_INLINE mat3 mat3RotateX(scalar r) {
 		scalar c = mm_cos(r);
 		scalar s = mm_sin(r);
@@ -608,6 +695,12 @@ extern "C" {
 
 	#pragma region Mat4_Functions
 	MMATH_GENFUNC_MATSTANDARD(4);
+	MMATH_CONST mat4 mat4Identity = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
 	MMATH_INLINE mat4 mat4Scale(vec3 s) {
 		mat4 ret = {
 			s.x, 0,   0,   0,
@@ -630,10 +723,10 @@ extern "C" {
 		scalar f   = (scalar)1.0 / mm_tan(fovY * 0.5);
 		scalar nf  = (scalar)1.0 / (zNear - zFar);
 		mat4 ret = {
-			f/aspect, 0,  0,               0,
-			0,        f,  0,               0,
-			0,        0, (zFar+zNear)*nf, -1,
-			0,        0, (2*zFar*zNear)*nf,0
+			f/aspect, 0,  0,                0,
+			0,        f,  0,                0,
+			0,        0, (zFar+zNear)*nf,  -1,
+			0,        0, (2*zFar*zNear)*nf, 0
 		};
 		return ret;
 	}
@@ -670,6 +763,29 @@ extern "C" {
 		return ret;
 	}
 	#pragma endregion Mat4_Functions
+
+	//Transformations
+	#pragma region Transform_Functions
+	MMATH_CONST transform transformIdentity = { {0,0,0}, {1,1,1}, {0,0,0,1} };
+	MMATH_INLINE mat4 transformToMat4(transform t) {
+		mat4 ret = {
+			t.scale.x, 0, 0, 0,
+			0, t.scale.y, 0, 0,
+			0, 0, t.scale.z, 0,
+			t.pos.x, t.pos.y, t.pos.z, 1
+		};
+		ret = mat4Mul( mat3ToMat4( quatToMat3(t.rot) ), ret );
+		return ret;
+	}
+	MMATH_INLINE transform transformLerp(transform f, transform l, scalar t) {
+		transform ret = {
+			vec3Lerp(f.pos, l.pos, t),
+			vec3Lerp(f.scale, l.scale, t),
+			quatSlerp(f.rot, l.rot, t)
+		};
+		return ret;
+	}
+	#pragma endregion Transform_Functions
 
 #if defined(__cplusplus)
 }
