@@ -9,110 +9,6 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-/*
-Library cheat sheet:
-
-Functions:
-	Most functions are subject-verb, i.e. vec3 Mul (...)
-	                                 subject^   ^verb
-	Some functions are subject-verb-subject i.e. vec3 Mul Scalar(...)
-
-	Subjects:
-		Scalar:
-			-float  (without MMATH_DOUBLE defined)
-			-double (with MMATH_DOUBLE defined)
-
-		Vectors:
-			-vec2 (x, y)
-			-vec3 (x, y, z | r, g, b)
-			-vec4 (x, y, z, w | r, g, b, a)
-		To add a vector of dimension N, do:
-			**This typedef is very specific**
-			typedef struct vecN_t {
-				union {
-					scalar data[N];
-					struct {
-						scalar x, y, z... N;
-					};
-				};
-			} vecN;
-			MMATH_GENFUN_VECSTANDARD(N);
-
-		Quaternion:
-			-quat (x, y, z, w)
-
-		Matrices (square only!):
-			-mat2
-			-mat3
-			-mat4
-		To add a matrix of dimension N * N, do:
-			**You MUST have created the vector of N dimensions before the matrix!**
-			**This typedef is very specific**
-			typedef struct matN_t {
-				union {
-					scalar data[N * N];
-					vecN row[N]
-					struct {
-						scalar x0, y0, z0, ... N
-						scalar x1, y1, z1, ... N
-						scalar x2, y2, z2, ... N
-							...
-						scalar xN, yN, zN, ... N
-					};
-				};
-			} vecN;
-			MMATH_GENFUN_MATSTANDARD(N);
-
-		Transformations:
-			-transform (position, scale, rotation)
-
-	Verbs:
-		To    - converts one subject to another
-		Add   - add one subject to another
-		Sub   - subtract one subject from another
-		Mul   - multiply one subject by another
-		Div   - divide one subject by another
-		Cross - cross product between subjects
-		Dot   - dot product between subjects
-		Lerp  - linearly interpolates one subject to another
-		Slerp - spherically linearly interpolates one subject to another
-
-Parameters:
-	a - left side operand
-	b - right side operand
-
-	r - angle in radians
-	e - euler angles (x = pitch, y = yaw, z = roll)
-
-	s - scale
-	t - translation
-
-	f - first
-	l - last
-	t - time (S/LERP only)
-
-	aspect - aspect ratio (width / height)
-	fovY - field of view of the Y axis ( fovX calculated with 2 * atan(aspect * tan(fovY / 2)) )
-	near - near Z clipping plane
-	far - far Z clipping plane
-
-	axis - unit vector
-
-	parent - parent of a struct in relative space
-	child  - in space relative to parent
-	
-!WARNINGS! (If you're having a problem, read this first):
-	-Unit vector parameters are NOT checked, make sure they are normalized!
-		-vecXNormalize(vecX a)
-
-	-Quaternions are NOT guaranteed to be normalized after functions (most still are though).
-		-quatNormalize(quat a)
-
-	-All angles are ALWAYS in radians
-		-radians(scalar degrees)
-		-degrees(scalar radians)
-*/
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -308,6 +204,12 @@ extern "C" {
 		} \
 		return mm_sqrt(sum); \
 	}
+	#define MMATH_GENFUNC_VECDIST(integer) \
+	MMATH_INLINE scalar vec##integer##Distance(const vec##integer *a, const vec##integer *b) { \
+		vec##integer dir; \
+		vec##integer##Sub(&dir, b, a); \
+		return vec##integer##Length(&dir); \
+	}
 	#define MMATH_GENFUNC_VECNORM(integer) \
 	MMATH_INLINE void vec##integer##Normalize(vec##integer *dest, const vec##integer *a) { \
 		scalar len = (scalar)1.0 / vec##integer##Length(a); \
@@ -334,6 +236,7 @@ extern "C" {
 		MMATH_GENFUNC_VECDIV(integer); \
 		MMATH_GENFUNC_VECDOT(integer); \
 		MMATH_GENFUNC_VECLEN(integer); \
+		MMATH_GENFUNC_VECDIST(integer); \
 		MMATH_GENFUNC_VECNORM(integer); \
 		MMATH_GENFUNC_VECLERP(integer);
 	#pragma endregion Vec_TempDef
