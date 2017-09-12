@@ -20,7 +20,7 @@ Functions:
 	Subjects:
 		Scalar:
 			-float  (without MMATH_DOUBLE defined)
-			-dobule (with MMATH_DOUBLE defined)
+			-double (with MMATH_DOUBLE defined)
 
 		Vectors:
 			-vec2 (x, y)
@@ -41,7 +41,7 @@ Functions:
 		Quaternion:
 			-quat (x, y, z, w)
 
-		Matrics (square only!):
+		Matrices (square only!):
 			-mat2
 			-mat3
 			-mat4
@@ -118,6 +118,7 @@ extern "C" {
 #endif
 
 	#include <math.h>
+	#include <string.h>
 
 	#define MMATH_INLINE inline
 	#define MMATH_CONST static const
@@ -244,99 +245,83 @@ extern "C" {
 	#pragma region Vec_TempDef
 	#define VEC_FOR(integer) for (int i = 0; i < integer; i++)
 	#define MMATH_GENFUNC_VECADDSCALAR(integer) \
-	MMATH_INLINE vec##integer vec##integer##AddScalar(vec##integer a, scalar b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##AddScalar(vec##integer *dest, const vec##integer *a, scalar b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] + b; \
+			dest->data[i] = a->data[i] + b; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECSUBSCALAR(integer) \
-	MMATH_INLINE vec##integer vec##integer##SubScalar(vec##integer a, scalar b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##SubScalar(vec##integer *dest, const vec##integer *a, scalar b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] - b; \
+			dest->data[i] = a->data[i] - b; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECMULSCALAR(integer) \
-	MMATH_INLINE vec##integer vec##integer##MulScalar(vec##integer a, scalar b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##MulScalar(vec##integer *dest, const vec##integer *a, scalar b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] * b; \
+			dest->data[i] = a->data[i] * b; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECDIVSCALAR(integer) \
-	MMATH_INLINE vec##integer vec##integer##DivScalar(vec##integer a, scalar b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##DivScalar(vec##integer *dest, const vec##integer *a, scalar b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] / b; \
+			dest->data[i] = a->data[i] / b; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECADD(integer) \
-	MMATH_INLINE vec##integer vec##integer##Add(vec##integer a, vec##integer b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##Add(vec##integer *dest, const vec##integer *a, const vec##integer *b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] + b.data[i]; \
+			dest->data[i] = a->data[i] + b->data[i]; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECSUB(integer) \
-	MMATH_INLINE vec##integer vec##integer##Sub(vec##integer a, vec##integer b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##Sub(vec##integer *dest, const vec##integer *a, const vec##integer *b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] - b.data[i]; \
+			dest->data[i] = a->data[i] - b->data[i]; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECMUL(integer) \
-	MMATH_INLINE vec##integer vec##integer##Mul(vec##integer a, vec##integer b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##Mul(vec##integer *dest, const vec##integer *a, const vec##integer *b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] * b.data[i]; \
+			dest->data[i] = a->data[i] * b->data[i]; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECDIV(integer) \
-	MMATH_INLINE vec##integer vec##integer##Div(vec##integer a, vec##integer b) { \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##Div(vec##integer *dest, const vec##integer *a, const vec##integer *b) { \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] / b.data[i]; \
+			dest->data[i] = a->data[i] / b->data[i]; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECDOT(integer) \
-	MMATH_INLINE scalar vec##integer##Dot(vec##integer a, vec##integer b) { \
+	MMATH_INLINE scalar vec##integer##Dot(const vec##integer *a, const vec##integer *b) { \
 		scalar ret = 0; \
 		VEC_FOR(integer) { \
-			ret += a.data[i] * b.data[i]; \
+			ret += a->data[i] * b->data[i]; \
 		} \
 		return ret; \
 	}
 	#define MMATH_GENFUNC_VECLEN(integer) \
-	MMATH_INLINE scalar vec##integer##Length(vec##integer a) { \
+	MMATH_INLINE scalar vec##integer##Length(const vec##integer *a) { \
 		scalar sum = 0; \
 		VEC_FOR(integer) { \
-			sum += a.data[i] * a.data[i]; \
+			sum += a->data[i] * a->data[i]; \
 		} \
 		return mm_sqrt(sum); \
 	}
 	#define MMATH_GENFUNC_VECNORM(integer) \
-	MMATH_INLINE vec##integer vec##integer##Normalize(vec##integer a) { \
-		scalar len = vec##integer##Length(a); \
-		vec##integer ret; \
+	MMATH_INLINE void vec##integer##Normalize(vec##integer *dest, const vec##integer *a) { \
+		scalar len = (scalar)1.0 / vec##integer##Length(a); \
 		VEC_FOR(integer) { \
-			ret.data[i] = a.data[i] / len; \
+			dest->data[i] = a->data[i] * len; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_VECLERP(integer) \
-	MMATH_INLINE vec##integer vec##integer##Lerp(vec##integer f, vec##integer l, scalar t) { \
-		vec##integer dir = vec##integer##Sub(l, f); \
-		vec##integer ret = vec##integer##MulScalar(dir, t); \
-		return vec##integer##Add(ret, f); \
+	MMATH_INLINE void vec##integer##Lerp(vec##integer *dest, const vec##integer *f, const vec##integer *l, scalar t) { \
+		vec##integer temp1; \
+		vec##integer##Sub(&temp1, l, f); \
+		vec##integer temp2; \
+		vec##integer##MulScalar(&temp2, &temp1, t); \
+		vec##integer##Add(dest, &temp2, f); \
 	}
 	#define MMATH_GENFUNC_VECSTANDARD(integer) \
 		MMATH_GENFUNC_VECADDSCALAR(integer) \
@@ -357,13 +342,16 @@ extern "C" {
 	MMATH_GENFUNC_VECSTANDARD(2);
 	MMATH_CONST vec2 vec2Zero     = { 0, 0 };
 	MMATH_CONST vec2 vec2Identity = { 1, 1 };
-	MMATH_INLINE vec3 vec2ToVec3(vec2 a, scalar z) {
-		vec3 ret = {a.x, a.y, z};
-		return ret;
+	MMATH_INLINE void vec2ToVec3(vec3 *dest, const vec2 *a, scalar z) {
+		dest->x = a->x;
+		dest->y = a->y;
+		dest->z = z;
 	}
-	MMATH_INLINE vec4 vec2ToVec4(vec2 a, scalar z, scalar w) {
-		vec4 ret = {a.x, a.y, z, w};
-		return ret;
+	MMATH_INLINE void vec2ToVec4(vec4 *dest, const vec2 *a, scalar z, scalar w) {
+		dest->x = a->x;
+		dest->y = a->y;
+		dest->z = z;
+		dest->w = w;
 	}
 	#pragma endregion Vec2_Functions
 
@@ -374,20 +362,20 @@ extern "C" {
 	MMATH_CONST vec3 vec3XAxis    = { 1, 0, 0 };
 	MMATH_CONST vec3 vec3YAxis    = { 0, 1, 0 };
 	MMATH_CONST vec3 vec3ZAxis    = { 0, 0, 1 };
-	MMATH_INLINE vec2 vec3ToVec2(vec3 a) {
-		vec2 ret = {a.x, a.y};
-		return ret;
+	MMATH_INLINE vec2 vec3ToVec2(vec2 *dest, const vec3 *a) {
+		dest->x = a->x;
+		dest->y = a->y;
 	}
-	MMATH_INLINE vec4 vec3ToVec4(vec3 a, scalar w) {
-		vec4 ret = {a.x, a.y, a.z, w};
-		return ret;
+	MMATH_INLINE void vec3ToVec4(vec4 *dest, const vec3 *a, scalar w) {
+		dest->x = a->x;
+		dest->y = a->y;
+		dest->z = a->z;
+		dest->w = w;
 	}
-	MMATH_INLINE vec3 vec3Cross(vec3 a, vec3 b) {
-		vec3 ret;
-		ret.x = a.y * b.z - a.z * b.y;
-		ret.y = a.z * b.x - a.x * b.z;
-		ret.z = a.x * b.y - a.y * b.x;
-		return ret;
+	MMATH_INLINE void vec3Cross(vec3 *dest, const vec3 *a, const vec3 *b) {
+		dest->x = a->y * b->z - a->z * b->y;
+		dest->y = a->z * b->x - a->x * b->z;
+		dest->z = a->x * b->y - a->y * b->x;
 	}
 	#pragma endregion Vec3_Functions
 
@@ -395,144 +383,156 @@ extern "C" {
 	MMATH_GENFUNC_VECSTANDARD(4);
 	MMATH_CONST vec4 vec4Zero     = { 0, 0, 0, 0 };
 	MMATH_CONST vec4 vec4Identity = { 1, 1, 1, 1 };
-	MMATH_INLINE vec2 vec4ToVec2(vec4 a) {
-		vec2 ret = {a.x, a.y};
-		return ret;
+	MMATH_INLINE void vec4ToVec2(vec2 *dest, const vec4 *a) {
+		dest->x = a->x;
+		dest->y = a->y;
 	}
-	MMATH_INLINE vec3 vec4ToVec3(vec4 a) {
-		vec3 ret = {a.x, a.y, a.z};
-		return ret;
+	MMATH_INLINE void vec4ToVec3(vec3 *dest, const vec4 *a) {
+		dest->x = a->x;
+		dest->y = a->y;
+		dest->z = a->z;
 	}
-	MMATH_INLINE vec3 vec4DivW(vec4 a) {
-		vec3 ret = {a.x / a.w, a.y / a.w, a.z / a.w};
-		return ret;
+	MMATH_INLINE void vec4DivW(vec3 *dest, const vec4 *a) {
+		scalar w = (scalar)1.0 / a->w;
+		dest->x = a->x * w;
+		dest->y = a->y * w;
+		dest->z = a->z * w;
 	}
 	#pragma endregion Vec4_Functions
 
 	//Quaternion Math
 	#pragma region Quaternion_Functions
 	MMATH_CONST quat quatIndentity = { 0, 0, 0, 1 };
-	MMATH_INLINE scalar quatLength(quat a) {
-		return vec4Length(a.vec);
+	MMATH_INLINE scalar quatLength(const quat *a) {
+		return vec4Length((const vec4*)a);
 	}
-	MMATH_INLINE quat quatNormalize(quat a) {
-		return (quat) { .vec = vec4Normalize(a.vec) };
+	MMATH_INLINE void quatNormalize(quat *dest, const quat *a) {
+		vec4Normalize((vec4*)dest, (const vec4*)a);
 	}
-	MMATH_INLINE quat quatMulScalar(quat a, scalar b) {
-		return (quat) { .vec = vec4MulScalar(a.vec, b) };
+	MMATH_INLINE void quatMulScalar(quat *dest, const quat *a, scalar b) {
+		vec4MulScalar((vec4*)dest, (const vec4*)a, b);
 	}
-	MMATH_INLINE quat quatAdd(quat a, quat b) {
-		quat ret = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
-		return ret;
+	MMATH_INLINE void quatAdd(quat *dest, const quat *a, const quat *b) {
+		vec4Add((vec4*)dest, (const vec4*)a, (const vec4*)b);
 	}
-	MMATH_INLINE quat quatMul(quat a, quat b) {
-		quat ret;
-		ret.w = a.w * b.w - vec3Dot(a.axis, b.axis);
+	MMATH_INLINE void quatMul(quat *dest, const quat *a, const quat *b) {
+		dest->w = a->w * b->w - vec3Dot(&a->axis, &b->axis);
 
-		vec3 BwAv = vec3MulScalar(a.axis, b.w);
-		vec3 AwBv = vec3MulScalar(b.axis, a.w);
-		vec3 abv  = vec3Add(BwAv, AwBv);
-		vec3 AxB  = vec3Cross(a.axis, b.axis);
+		vec3 BwAv;
+		vec3MulScalar(&BwAv, &a->axis, b->w);
 
-		ret.axis = vec3Add(abv, AxB);
+		vec3 AwBv;
+		vec3MulScalar(&AwBv, &b->axis, a->w);
 
-		return ret;
-	}
-	MMATH_INLINE vec3 quatMulVec3(quat a, vec3 b) {
-		vec3 cross1  = vec3Cross(a.axis, b);
-		vec3 t       = vec3MulScalar(cross1, (scalar)2.0);
-		vec3 tw      = vec3MulScalar(t, a.w);
-		vec3 cross2  = vec3Cross(a.axis, t);
-		vec3 twcross = vec3Add(tw, cross2);
+		vec3 abv; 
+		vec3Add(&abv, &BwAv, &AwBv);
 
-		vec3 ret = vec3Add(b, twcross);
-		return ret;
+		vec3 AxB;
+		vec3Cross(&AxB, &a->axis, &b->axis);
+
+		vec3Add(&dest->axis, &abv, &AxB);
 	}
-	MMATH_INLINE quat quatNegate(quat a) {
-		quat ret = {-a.x, -a.y, -a.z, -a.w};
-		return ret;
+	MMATH_INLINE void quatMulVec3(vec3 *dest, const quat *a, const vec3 *b) {
+		vec3 cross1;
+		vec3Cross(&cross1, &a->axis, b);
+
+		vec3 t;
+		vec3MulScalar(&t, &cross1, (scalar)2.0);
+
+		vec3 tw;
+		vec3MulScalar(&tw, &t, a->w);
+
+		vec3 cross2;
+		vec3Cross(&cross2, &a->axis, &t);
+
+		vec3 twcross;
+		vec3Add(&twcross, &tw, &cross2);
+
+		vec3Add(dest, b, &twcross);
 	}
-	MMATH_INLINE quat quatConjugate(quat a) {
-		quat ret = {-a.x, -a.y, -a.z, a.w};
-		return ret;
+	MMATH_INLINE void quatNegate(quat *dest, const quat *a) {
+		dest->x = -a->x;
+		dest->y = -a->y;
+		dest->z = -a->z;
+		dest->w = -a->w;
 	}
-	MMATH_INLINE quat quatInverse(quat a) {
-		quat ret = quatConjugate(a);
+	MMATH_INLINE void quatConjugate(quat *dest, const quat *a) {
+		dest->x = -a->x;
+		dest->y = -a->y;
+		dest->z = -a->z;
+		dest->w =  a->w;
+	}
+	MMATH_INLINE void quatInverse(quat *dest, const quat *a) {
+		quatConjugate(dest, a);
 		scalar length = quatLength(a);
-		if (length == (scalar)1.0) {
-			return ret;
-		} else {
+		if (length != (scalar)1.0) {
 			scalar l2 = (scalar)1.0 / (length * length);
-			ret.x *= l2;
-			ret.y *= l2;
-			ret.z *= l2;
-			ret.w *= l2;
-			return ret;
+			dest->x *= l2;
+			dest->y *= l2;
+			dest->z *= l2;
+			dest->w *= l2;
 		}
 	}
-	MMATH_INLINE quat quatEurler(vec3 e) {
-		quat ret;
+	MMATH_INLINE void quatEurler(quat *dest, const vec3 *e) {
+		scalar cy = mm_cos(e->y * (scalar)0.5);
+		scalar sy = mm_sin(e->y * (scalar)0.5);
+		scalar cr = mm_cos(e->z * (scalar)0.5);
+		scalar sr = mm_sin(e->z * (scalar)0.5);
+		scalar cp = mm_cos(e->x * (scalar)0.5);
+		scalar sp = mm_sin(e->x * (scalar)0.5);
 
-		scalar cy = mm_cos(e.y * (scalar)0.5);
-		scalar sy = mm_sin(e.y * (scalar)0.5);
-		scalar cr = mm_cos(e.z * (scalar)0.5);
-		scalar sr = mm_sin(e.z * (scalar)0.5);
-		scalar cp = mm_cos(e.x * (scalar)0.5);
-		scalar sp = mm_sin(e.x * (scalar)0.5);
-
-		ret.x = cy * sr * cp - sy * cr * sp;
-		ret.y = cy * cr * sp + sy * sr * cp;
-		ret.z = sy * cr * cp - cy * sr * sp;
-		ret.w = cy * cr * cp + sy * sr * sp;
-
-		return ret;
+		dest->x = cy * sr * cp - sy * cr * sp;
+		dest->y = cy * cr * sp + sy * sr * cp;
+		dest->z = sy * cr * cp - cy * sr * sp;
+		dest->w = cy * cr * cp + sy * sr * sp;
 	}
-	MMATH_INLINE quat quatAxisAngle(vec3 axis, scalar r) {
+	MMATH_INLINE void quatAxisAngle(quat * dest, const vec3 *axis, scalar r) {
 		scalar a2 = r * (scalar)0.5;
-		quat ret;
-		ret.axis = vec3MulScalar(axis, mm_sin(a2));
-		ret.w    = mm_cos(a2);
-		return ret;
+		vec3MulScalar(&dest->axis, axis, mm_sin(a2));
+		dest->w = mm_cos(a2);
 	}
-	MMATH_INLINE mat3 quatToMat3(quat a) {
-		scalar x2 = 2 * a.x * a.x,
-			   y2 = 2 * a.y * a.y,
-			   z2 = 2 * a.z * a.z,
-			   xy = 2 * a.x * a.y,
-			   xz = 2 * a.x * a.z,
-			   yz = 2 * a.y * a.z,
-			   xw = 2 * a.x * a.w,
-			   yw = 2 * a.y * a.w,
-			   zw = 2 * a.z * a.w;
+	MMATH_INLINE void quatToMat3(mat3 *dest, const quat *a) {
+		scalar x2 = 2 * a->x * a->x,
+			   y2 = 2 * a->y * a->y,
+			   z2 = 2 * a->z * a->z,
+			   xy = 2 * a->x * a->y,
+			   xz = 2 * a->x * a->z,
+			   yz = 2 * a->y * a->z,
+			   xw = 2 * a->x * a->w,
+			   yw = 2 * a->y * a->w,
+			   zw = 2 * a->z * a->w;
 		mat3 ret = {
 			1-y2-z2, xy+zw,   xz-yw,
 			xy-zw,   1-x2-z2, yz+xw,
 			xz+yz,   yz-xw,   1-x2-y2
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE quat quatSlerp(quat f, quat l, scalar t) {
-		quat ret;
-		scalar dot = vec4Dot(f.vec, l.vec);
+	MMATH_INLINE void quatSlerp(quat *dest, const quat * f, const quat *l, scalar t) {
+		scalar dot = vec4Dot((const vec4*)f, (const vec4*)l);
 
 		if (dot < (scalar)0.0) {
 			dot = -dot;
-			ret = quatInverse(l);
+			quatInverse(dest, l);
 		} else {
-			ret = l;
+			*dest = *l;
 		}
 
 		if (dot < (float)0.95) {
 			scalar angle = mm_acos(dot);
-			f = quatMulScalar(f, mm_sin(angle * (1 - t)));
-			ret = quatMulScalar(ret, mm_sin(angle * t));
-			ret = quatAdd(f, ret);
-			ret = quatMulScalar(ret, (scalar)1.0 / mm_sin(angle));
-		} else {
-			ret.vec = vec4Lerp(f.vec, ret.vec, t);
-		}
+			quat fp;
+			quatMulScalar(&fp, f, mm_sin(angle * (1 - t)));
 
-		return ret;
+			quat temp;
+			quatMulScalar(&temp, dest, mm_sin(angle * t));
+			quatAdd(dest, &fp, &temp);
+			quatMulScalar(&temp, dest, (scalar)1.0 / mm_sin(angle));
+			*dest = temp;
+		} else {
+			quat temp;
+			vec4Lerp((vec4*)&temp, (const vec4*)f, (const vec4*)dest, t);
+			*dest = temp;
+		}
 	}
 	#pragma endregion Quaternion_Functions
 
@@ -541,72 +541,53 @@ extern "C" {
 	#define MAT_FOR_FLAT(integer) for (int i = 0; i < integer * integer; i++)
 	#define MAT_FOR(integer) for (int x = 0; x < integer; x++) for (int y = 0; y < integer; y++)
 	#define MMATH_GENFUNC_MATTRPOSE(integer) \
-	MMATH_INLINE mat##integer mat##integer##Transpose(mat##integer a) { \
-		mat##integer ret; \
+	MMATH_INLINE void mat##integer##Transpose(mat##integer * dest, const mat##integer *a) { \
 		MAT_FOR(integer) { \
-			ret.row[x].data[y] = a.row[y].data[x]; \
+			dest->row[x].data[y] = a->row[y].data[x]; \
 		} \
-		return ret; \
-	}
-	#define MMATH_GENFUNC_MATIDENT(integer) \
-	MMATH_INLINE mat##integer mat##integer##Identity(void) { \
-		mat##integer ret = {0}; \
-		for (int i = 0; i < integer * integer; i += integer + 1) { \
-			ret.data[i] = (scalar)1.0; \
-		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATDIAG(integer) \
-	MMATH_INLINE mat##integer mat##integer##Diagonal(scalar f) { \
-		mat##integer ret = {0}; \
+	MMATH_INLINE void mat##integer##Diagonal(mat##integer *dest, scalar f) { \
+		memset(dest, 0x0, sizeof(mat##integer)); \
 		for (int i = 0; i < integer * integer; i += integer + 1) { \
-			ret.data[i] = f; \
+			dest->data[i] = f; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATADD(integer) \
-	MMATH_INLINE mat##integer mat##integer##Add(mat##integer a, mat##integer b) { \
-		mat##integer ret; \
+	MMATH_INLINE void mat##integer##Add(mat##integer *dest, const mat##integer *a, const mat##integer *b) { \
 		MAT_FOR_FLAT(integer) { \
-			ret.data[i] = a.data[i] + b.data[i]; \
+			dest->data[i] = a->data[i] + b->data[i]; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATSUB(integer) \
-	MMATH_INLINE mat##integer mat##integer##Sub(mat##integer a, mat##integer b) { \
-		mat##integer ret; \
+	MMATH_INLINE void mat##integer##Sub(mat##integer *dest, const mat##integer *a, const mat##integer *b) { \
 		MAT_FOR_FLAT(integer) { \
-			ret.data[i] = a.data[i] - b.data[i]; \
+			dest->data[i] = a->data[i] - b->data[i]; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATMUL(integer) \
-	MMATH_INLINE mat##integer mat##integer##Mul(mat##integer a, mat##integer b) { \
-		mat##integer ret = {0}; \
+	MMATH_INLINE void mat##integer##Mul(mat##integer *dest, const mat##integer *a, const mat##integer *b) { \
+		memset(dest, 0x0, sizeof(mat##integer)); \
 		MAT_FOR(integer) { \
 			VEC_FOR(integer) { \
-				ret.row[x].data[y] += a.row[x].data[i] * b.row[i].data[y]; \
+				dest->row[x].data[y] += a->row[x].data[i] * b->row[i].data[y]; \
 			} \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATMULSCALAR(integer) \
-	MMATH_INLINE mat##integer mat##integer##MulScalar(mat##integer a, scalar b) { \
-		mat##integer ret; \
+	MMATH_INLINE void mat##integer##MulScalar(mat##integer *dest, const mat##integer *a, scalar b) { \
 		MAT_FOR_FLAT(integer) { \
-			ret.data[i] = a.data[i] * b; \
+			dest->data[i] = a->data[i] * b; \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATMULVEC(integer) \
-	MMATH_INLINE vec##integer mat##integer##MulVec##integer(mat##integer a, vec##integer b) { \
-		vec##integer ret = {0}; \
+	MMATH_INLINE vec##integer mat##integer##MulVec##integer(vec##integer *dest, const mat##integer *a, const vec##integer *b) { \
+		memset(dest, 0x0, sizeof(vec##integer)); \
 		VEC_FOR(integer) { \
 			for (int c = 0; c < integer; c++) { \
-				ret.data[i] += a.row[c].data[i] * b.data[c]; \
+				dest->data[i] += a->row[c].data[i] * b->data[c]; \
 			} \
 		} \
-		return ret; \
 	}
 	#define MMATH_GENFUNC_MATSTANDARD(integer) \
 		MMATH_GENFUNC_MATTRPOSE(integer); \
@@ -616,7 +597,6 @@ extern "C" {
 		MMATH_GENFUNC_MATMUL(integer); \
 		MMATH_GENFUNC_MATMULSCALAR(integer); \
 		MMATH_GENFUNC_MATMULVEC(integer);
-		//MMATH_GENFUNC_MATIDENT(integer);
 	#pragma endregion Mat_TempDef
 	
 	#pragma region Mat2_Functions
@@ -625,22 +605,22 @@ extern "C" {
 		1, 0,
 		0, 1
 	};
-	MMATH_INLINE mat3 mat2ToMat3(mat2 a) {
+	MMATH_INLINE void mat2ToMat3(mat3 *dest, const mat2 *a) {
 		mat3 ret = {
-			a.x0, a.y0, 0,
-			a.x1, a.y1, 0,
-			0,    0,    1
+			a->x0, a->y0, 0,
+			a->x1, a->y1, 0,
+			0,    0,      1
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat4 mat2ToMat4(mat2 a) {
+	MMATH_INLINE void mat2ToMat4(mat4 *dest, const mat2 *a) {
 		mat4 ret = {
-			a.x0, a.y0, 0, 0,
-			a.x1, a.y1, 0, 0,
-			0,    0,    1, 0,
-			0,    0,    0, 1
+			a->x0, a->y0, 0, 0,
+			a->x1, a->y1, 0, 0,
+			0,    0,      1, 0,
+			0,    0,      0, 1
 		};
-		return ret;
+		*dest = ret;
 	}
 	#pragma endregion Mat2_Functions
 
@@ -651,7 +631,23 @@ extern "C" {
 		0, 1, 0,
 		0, 0, 1
 	};
-	MMATH_INLINE mat3 mat3RotateX(scalar r) {
+	MMATH_INLINE void mat3ToMat2(mat2 *dest, const mat3 *a) {
+		mat2 ret = {
+			a->x0, a->y0,
+			a->x1, a->y1
+		};
+		*dest = ret;
+	}
+	MMATH_INLINE void mat3ToMat4(mat4 *dest, const mat3 *a) {
+		mat4 ret = {
+			a->x0, a->y0, a->z0, 0,
+			a->x1, a->y1, a->z1, 0,
+			a->x2, a->y2, a->z2, 0,
+			0,     0,     0,     1
+		};
+		*dest = ret;
+	}
+	MMATH_INLINE void mat3RotateX(mat3 *dest, scalar r) {
 		scalar c = mm_cos(r);
 		scalar s = mm_sin(r);
 		mat3 ret = {
@@ -659,9 +655,9 @@ extern "C" {
 			0, c, s,
 			0,-s, c
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat3 mat3RotateY(scalar r) {
+	MMATH_INLINE void mat3RotateY(mat3 *dest, scalar r) {
 		scalar c = mm_cos(r);
 		scalar s = mm_sin(r);
 		mat3 ret = {
@@ -669,9 +665,9 @@ extern "C" {
 			0, 1, 0,
 		    s, 0, c
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat3 mat3RotateZ(scalar r) {
+	MMATH_INLINE void mat3RotateZ(mat3 *dest, scalar r) {
 		scalar c = mm_cos(r);
 		scalar s = mm_sin(r);
 		mat3 ret = {
@@ -679,23 +675,7 @@ extern "C" {
 		   -s, c, 0,
 			0, 0, 1
 		};
-		return ret;
-	}
-	MMATH_INLINE mat2 mat3ToMat2(mat3 a) {
-		mat2 ret = {
-			a.x0, a.y0,
-			a.x1, a.y1
-		};
-		return ret;
-	}
-	MMATH_INLINE mat4 mat3ToMat4(mat3 a) {
-		mat4 ret = {
-			a.x0, a.y0, a.z0, 0,
-			a.x1, a.y1, a.z1, 0,
-			a.x2, a.y2, a.z2, 0,
-			0,    0,    0,    1
-		};
-		return ret;
+		*dest = ret;
 	}
 	#pragma endregion Mat3_Functions
 
@@ -707,25 +687,25 @@ extern "C" {
 		0, 0, 1, 0,
 		0, 0, 0, 1
 	};
-	MMATH_INLINE mat4 mat4Scale(vec3 s) {
+	MMATH_INLINE void mat4Scale(mat4 *dest, const vec3 *s) {
 		mat4 ret = {
-			s.x, 0,   0,   0,
-			0,   s.y, 0,   0,
-			0,   0,   s.z, 0,
-			0,   0,   0,   1
+			s->x, 0,    0,    0,
+			0,    s->y, 0,    0,
+			0,    0,    s->z, 0,
+			0,    0,    0,    1
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat4 mat4Translate(vec3 t) {
+	MMATH_INLINE void mat4Translate(mat4 *dest, const vec3 *t) {
 		mat4 ret = {
-			1,   0,   0,   0,
-			0,   1,   0,   0,
-			0,   0,   1,   0,
-			t.x, t.y, t.z, 1
+			1,    0,    0,    0,
+			0,    1,    0,    0,
+			0,    0,    1,    0,
+			t->x, t->y, t->z, 1
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat4 mat4Perspective(scalar aspect, scalar fovY, scalar zNear, scalar zFar) {
+	MMATH_INLINE void mat4Perspective(mat4 *dest, scalar aspect, scalar fovY, scalar zNear, scalar zFar) {
 		scalar f   = (scalar)1.0 / mm_tan(fovY * 0.5);
 		scalar nf  = (scalar)1.0 / (zNear - zFar);
 		mat4 ret = {
@@ -734,16 +714,26 @@ extern "C" {
 			0,        0, (zFar+zNear)*nf,  -1,
 			0,        0, (2*zFar*zNear)*nf, 0
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat4 mat4LookAt(vec3 eye, vec3 center, vec3 up) {
-		vec3 z = vec3Normalize( vec3Sub(center, eye) );
-		vec3 x = vec3Normalize( vec3Cross(up, z) );
-		vec3 y = vec3Cross(z, x);
+	MMATH_INLINE void mat4LookAt(mat4 *dest, const vec3 *eye, const vec3 *center, const vec3 *up) {
+		vec3 temp;
+		vec3Sub(&temp, center, eye);
 
-		scalar ndotx = -vec3Dot(x, eye);
-		scalar ndoty = -vec3Dot(y, eye);
-		scalar ndotz = -vec3Dot(z, eye);
+		vec3 z;
+		vec3Normalize(&z, &temp);
+
+		vec3 x;
+		vec3Cross(&temp, up, &z);
+		vec3Normalize(&x, &temp);
+
+		vec3 y;
+		vec3Cross(&temp, &z, &x);
+		vec3Normalize(&y, &temp);
+
+		scalar ndotx = -vec3Dot(&x, eye);
+		scalar ndoty = -vec3Dot(&y, eye);
+		scalar ndotz = -vec3Dot(&z, eye);
 
 		mat4 ret = {
 			x.x,   y.x,   z.x,   0,
@@ -751,57 +741,60 @@ extern "C" {
 			x.z,   y.z,   z.z,   0,
 			ndotx, ndoty, ndotz, 1
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat2 mat4ToMat2(mat4 a) {
+	MMATH_INLINE void mat4ToMat2(mat2 *dest, const mat4 *a) {
 		mat2 ret = {
-			a.x0, a.y0,
-			a.x1, a.y1
+			a->x0, a->y0,
+			a->x1, a->y1
 		};
-		return ret;
+		*dest = ret;
 	}
-	MMATH_INLINE mat3 mat4ToMat3(mat4 a) {
+	MMATH_INLINE void mat4ToMat3(mat3 *dest, const mat4 *a) {
 		mat3 ret = {
-			a.x0, a.y0, a.z0,
-			a.x1, a.y1, a.z1,
-			a.x2, a.y2, a.z2
+			a->x0, a->y0, a->z0,
+			a->x1, a->y1, a->z1,
+			a->x2, a->y2, a->z2
 		};
-		return ret;
+		*dest = ret;
 	}
 	#pragma endregion Mat4_Functions
 
 	//Transformations
 	#pragma region Transform_Functions
 	MMATH_CONST transform transformIdentity = { {0,0,0}, {1,1,1}, {0,0,0,1} };
-	MMATH_INLINE mat4 transformToMat4(transform t) {
+	MMATH_INLINE void transformToMat4(mat4 *dest, const transform *t) {
 		mat4 ret = {
-			t.scale.x, 0, 0, 0,
-			0, t.scale.y, 0, 0,
-			0, 0, t.scale.z, 0,
-			t.pos.x, t.pos.y, t.pos.z, 1
+			t->scale.x, 0, 0, 0,
+			0, t->scale.y, 0, 0,
+			0, 0, t->scale.z, 0,
+			t->pos.x, t->pos.y, t->pos.z, 1
 		};
-		ret = mat4Mul( mat3ToMat4( quatToMat3(t.rot) ), ret );
-		return ret;
+		mat3 q;
+		quatToMat3(&q, &t->rot);
+
+		mat4 q4;
+		mat3ToMat4(&q4, &q);
+
+		mat4Mul(dest, &q4, &ret);
 	}
-	MMATH_INLINE transform transformMul(transform a, transform b) {
-		vec3 pos = quatMulVec3(a.rot, b.pos);
-		pos = vec3Mul(pos, a.scale);
-		transform ret = {
-			vec3Add(pos, a.pos),
-			vec3Mul(a.scale, b.scale),
-			quatMul(a.rot, b.rot)
-		};
-		return ret;
+	MMATH_INLINE void transformMul(transform *dest, const transform *a, const transform *b) {
+		vec3 pos;
+		quatMulVec3(&pos, &a->rot, &b->pos);
+
+		vec3 posScale;
+		vec3Mul(&posScale, &pos, &a->scale);
+
+		vec3Add(&dest->pos, &posScale, &a->pos);
+		vec3Mul(&dest->scale, &a->scale, &b->scale);
+		quatMul(&dest->rot, &a->rot, &b->rot);
 	}
 	//TODO: Solve transform inverse
 	//Oh boy that's going to be a hard one
-	MMATH_INLINE transform transformLerp(transform f, transform l, scalar t) {
-		transform ret = {
-			vec3Lerp(f.pos, l.pos, t),
-			vec3Lerp(f.scale, l.scale, t),
-			quatSlerp(f.rot, l.rot, t)
-		};
-		return ret;
+	MMATH_INLINE void transformLerp(transform *dest, const transform *f, const transform *l, scalar t) {
+		vec3Lerp(&dest->pos, &f->pos, &l->pos, t);
+		vec3Lerp(&dest->scale, &f->scale, &l->scale, t);
+		quatSlerp(&dest->rot, &f->rot, &l->rot, t);
 	}
 	#pragma endregion Transform_Functions
 
