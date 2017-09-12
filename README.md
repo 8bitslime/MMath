@@ -27,7 +27,6 @@ Some documentation is provided at the top of [`MMath.h`](./MMath.h), but more wi
 ---
 
 ### On the to-do list
-- Variadic functions
 - Rectangular matrices
 - SIMD optimizations
 - Various profilings

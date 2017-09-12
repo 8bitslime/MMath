@@ -5,3 +5,11 @@
 *.lastbuildstate
 *.vcxproj
 *.log
+*.user
+
+Debug/
+Release/
+MMath.wiki/
+/MMath.wiki
+*.wiki
+/MMath.wiki
