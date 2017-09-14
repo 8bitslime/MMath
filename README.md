@@ -11,7 +11,7 @@ MMath is a single-header math library made in C for use with OpenGL and other si
 
 MMath has been lightly tested with both MSVC and GCC, but problems may still exist. Please report any bugs found in the [issues section](https://github.com/8bitslime/MMath/issues) so they can be dealt with quickly.
 
-Some documentation is provided at the top of [`MMath.h`](./MMath.h), but more will be added in the near future.
+Some documentation is provided in the [wiki](https://github.com/8bitslime/MMath/wiki), but more will be added in the future.
 
 ---
 
@@ -21,8 +21,8 @@ Some documentation is provided at the top of [`MMath.h`](./MMath.h), but more wi
 - Quaternions
 - Transformations
 - Easy appending to:
-	- [vectors](https://github.com/8bitslime/MMath/blob/master/MMath.h#L29)
-    - [matrices](https://github.com/8bitslime/MMath/blob/master/MMath.h#L48)
+	- vectors
+    - matrices
 
 ---
 
@@ -30,6 +30,7 @@ Some documentation is provided at the top of [`MMath.h`](./MMath.h), but more wi
 - Rectangular matrices
 - SIMD optimizations
 - Various profilings
+- Renaming the library
 
 ---
 
