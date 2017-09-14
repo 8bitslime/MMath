@@ -619,6 +619,18 @@ extern "C" {
 		};
 		*dest = ret;
 	}
+	MMATH_INLINE void mat4Ortho(mat4 *dest, scalar left, scalar right, scalar top, scalar bottom, scalar zNear, scalar zFar) {
+		scalar tb = top - bottom;
+		scalar rf = right - left;
+		scalar fn = zFar - zNear;
+		mat4 ret = {
+			2/rf,               0,                  0,                      0,
+			0,                  2/tb,               0,                      0,
+			0,                  0,                  -2/fn,                  0,
+			-(right + left)/rf, -(top + bottom)/tb, -(zFar + zNear)/fn,     1
+		};
+		*dest = ret;
+	}
 	MMATH_INLINE void mat4LookAt(mat4 *dest, const vec3 *eye, const vec3 *center, const vec3 *up) {
 		vec3 temp;
 		vec3Sub(&temp, center, eye);
