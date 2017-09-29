@@ -140,6 +140,18 @@ extern "C" {
 	//Vector Math
 	#pragma region Vec_TempDef
 	#define VEC_FOR(integer) for (int i = 0; i < integer; i++)
+	#define MMATH_GENFUNC_VECNEGATE(integer) \
+	MMATH_INLINE void vec##integer##Negate(vec##integer *dest, const vec##integer *a) { \
+		VEC_FOR(integer) { \
+			dest->data[i] = -a->data[i]; \
+		} \
+	}
+	#define MMATH_GENFUNC_VECABS(integer) \
+	MMATH_INLINE void vec##integer##Abs(vec##integer *dest, const vec##integer *a) { \
+		VEC_FOR(integer) { \
+			dest->data[i] = (scalar)fabs(a->data[i]); \
+		} \
+	}
 	#define MMATH_GENFUNC_VECADDSCALAR(integer) \
 	MMATH_INLINE void vec##integer##AddScalar(vec##integer *dest, const vec##integer *a, scalar b) { \
 		VEC_FOR(integer) { \
@@ -238,7 +250,9 @@ extern "C" {
 		MMATH_GENFUNC_VECLEN(integer); \
 		MMATH_GENFUNC_VECDIST(integer); \
 		MMATH_GENFUNC_VECNORM(integer); \
-		MMATH_GENFUNC_VECLERP(integer);
+		MMATH_GENFUNC_VECLERP(integer); \
+		MMATH_GENFUNC_VECNEGATE(integer); \
+		MMATH_GENFUNC_VECABS(integer);
 	#pragma endregion Vec_TempDef
 
 	#pragma region Vec2_Functions
