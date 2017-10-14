@@ -123,6 +123,14 @@ extern "C" {
 	#define mm_sin(var)  ((scalar)sin(var))
 	#define mm_tan(var)  ((scalar)tan(var))
 
+	#if defined(MMATH_DOUBLE)
+	#define mm_min(x, y) (dmin(x, y))
+	#define mm_max(x, y) (dmax(x, y))
+	#else
+	#define mm_min(x, y) (fmin(x, y))
+	#define mm_max(x, y) (fmax(x, y))
+	#endif
+
 	//constants
 	#define mm_dpi ((scalar)6.283185307179586)
 	#define mm_pi  ((scalar)3.141592653589793)
