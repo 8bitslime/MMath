@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 	#include <math.h>
-	#include <string.h>
+	#include <memory.h>
 
 	#define MMATH_INLINE inline
 	#define MMATH_CONST static const
@@ -27,21 +27,21 @@ extern "C" {
 	typedef float scalar;
 	#endif
 
-	typedef struct vec2_t {
+	typedef struct vec2_s {
 		union {
 			scalar data[2];
 			struct { scalar x, y; };
 			//struct { scalar g, a; };
 		};
 	} vec2;
-	typedef struct vec3_t {
+	typedef struct vec3_s {
 		union {
 			scalar data[3];
 			struct { scalar x, y, z; };
 			struct { scalar r, g, b; };
 		};
 	} vec3;
-	typedef struct vec4_t {
+	typedef struct vec4_s {
 		union {
 			scalar data[4];
 			struct { scalar x, y, z, w; };
@@ -49,7 +49,7 @@ extern "C" {
 		};
 	} vec4;
 
-	typedef struct quat_t {
+	typedef struct quat_s {
 		union {
 			scalar data[4];
 			vec4 vec;
@@ -58,7 +58,7 @@ extern "C" {
 		};
 	} quat;
 
-	typedef struct mat2_t {
+	typedef struct mat2_s {
 		union {
 			scalar data[2 * 2];
 			vec2 row[2];
@@ -72,7 +72,7 @@ extern "C" {
 			};
 		};
 	} mat2;
-	typedef struct mat3_t {
+	typedef struct mat3_s {
 		union {
 			scalar data[3 * 3];
 			vec3  row[3];
@@ -88,7 +88,7 @@ extern "C" {
 			};
 		};
 	} mat3;
-	typedef struct mat4_t {
+	typedef struct mat4_s {
 		union {
 			scalar data[4 * 4];
 			vec4 row[4];
@@ -132,9 +132,9 @@ extern "C" {
 	#endif
 
 	//constants
-	#define mm_dpi ((scalar)6.283185307179586)
-	#define mm_pi  ((scalar)3.141592653589793)
-	#define mm_hpi ((scalar)1.570796326794896)
+	#define mm_dpi ((scalar)6.283185307179586) //double pi
+	#define mm_pi  ((scalar)3.141592653589793) //pi
+	#define mm_hpi ((scalar)1.570796326794896) //half pi
 
 	//Functions
 	MMATH_INLINE scalar radians(scalar degrees) {
@@ -702,10 +702,10 @@ extern "C" {
 	MMATH_CONST transform transformIdentity = { {0,0,0}, {1,1,1}, {0,0,0,1} };
 	MMATH_INLINE void transformToMat4(mat4 *dest, const transform *t) {
 		mat4 ret = {
-			t->scale.x, 0, 0, 0,
-			0, t->scale.y, 0, 0,
-			0, 0, t->scale.z, 0,
-			t->pos.x, t->pos.y, t->pos.z, 1
+			t->scale.x, 0,          0,          0,
+			0,          t->scale.y, 0,          0,
+			0,          0,          t->scale.z, 0,
+			t->pos.x,   t->pos.y,   t->pos.z,   1
 		};
 		mat3 q;
 		quatToMat3(&q, &t->rot);
@@ -715,6 +715,7 @@ extern "C" {
 
 		mat4Mul(dest, &q4, &ret);
 	}
+	//TODO: Solve transform inverse
 	MMATH_INLINE void transformMul(transform *dest, const transform *a, const transform *b) {
 		vec3 pos;
 		quatMulVec3(&pos, &a->rot, &b->pos);
@@ -726,8 +727,6 @@ extern "C" {
 		vec3Mul(&dest->scale, &a->scale, &b->scale);
 		quatMul(&dest->rot, &a->rot, &b->rot);
 	}
-	//TODO: Solve transform inverse
-	//Oh boy that's going to be a hard one
 	MMATH_INLINE void transformLerp(transform *dest, const transform *f, const transform *l, scalar t) {
 		vec3Lerp(&dest->pos, &f->pos, &l->pos, t);
 		vec3Lerp(&dest->scale, &f->scale, &l->scale, t);
