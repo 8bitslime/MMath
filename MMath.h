@@ -124,11 +124,11 @@ extern "C" {
 	#define mm_tan(var)  ((scalar)tan(var))
 
 	#if defined(MMATH_DOUBLE)
-	#define mm_min(x, y) (dmin(x, y))
-	#define mm_max(x, y) (dmax(x, y))
-	#else
 	#define mm_min(x, y) (fmin(x, y))
 	#define mm_max(x, y) (fmax(x, y))
+	#else
+	#define mm_min(x, y) (fminf(x, y))
+	#define mm_max(x, y) (fmaxf(x, y))
 	#endif
 
 	//constants
@@ -398,6 +398,7 @@ extern "C" {
 			dest->w *= l2;
 		}
 	}
+	//pitch X | yaw Y | roll Z
 	MMATH_INLINE void quatEurler(quat *dest, const vec3 *e) {
 		scalar cy = mm_cos(e->y * (scalar)0.5);
 		scalar sy = mm_sin(e->y * (scalar)0.5);
@@ -411,27 +412,36 @@ extern "C" {
 		dest->z = sy * cr * cp - cy * sr * sp;
 		dest->w = cy * cr * cp + sy * sr * sp;
 	}
-	MMATH_INLINE void quatAxisAngle(quat * dest, const vec3 *axis, scalar r) {
+	//MMATH_INLINE void quatToEuler(vec3 *dest, const quat *q) {
+		//TODO: make this
+	//}
+	MMATH_INLINE void quatAxisAngle(quat *dest, const vec3 *axis, scalar r) {
 		scalar a2 = r * (scalar)0.5;
 		vec3MulScalar(&dest->axis, axis, mm_sin(a2));
 		dest->w = mm_cos(a2);
 	}
 	MMATH_INLINE void quatToMat3(mat3 *dest, const quat *a) {
-		scalar x2 = 2 * a->x * a->x,
-			   y2 = 2 * a->y * a->y,
-			   z2 = 2 * a->z * a->z,
-			   xy = 2 * a->x * a->y,
-			   xz = 2 * a->x * a->z,
-			   yz = 2 * a->y * a->z,
-			   xw = 2 * a->x * a->w,
-			   yw = 2 * a->y * a->w,
-			   zw = 2 * a->z * a->w;
+		scalar x2 = a->x * a->x,
+			   y2 = a->y * a->y,
+			   z2 = a->z * a->z,
+			   xy = a->x * a->y,
+			   xz = a->x * a->z,
+			   yz = a->y * a->z,
+			   xw = a->x * a->w,
+			   yw = a->y * a->w,
+			   zw = a->z * a->w;
 		mat3 ret = {
-			1-y2-z2, xy+zw,   xz-yw,
-			xy-zw,   1-x2-z2, yz+xw,
-			xz+yz,   yz-xw,   1-x2-y2
+			1-(2*(y2+z2)), 2*(xy+zw),     2*(xz-yw),
+			2*(xy-zw),     1-(2*(x2+z2)), 2*(yz+xw),
+			2*(xz+yw),     2*(yz-xw),     1-(2*(x2+y2))
 		};
 		*dest = ret;
+	}
+	MMATH_INLINE void mat3ToMat4(mat4 *dest, const mat3 *a);
+	MMATH_INLINE void quatToMat4(mat4 *dest, const quat *a) {
+		mat3 ret;
+		quatToMat3(&ret, a);
+		mat3ToMat4(dest, &ret);
 	}
 	MMATH_INLINE void quatSlerp(quat *dest, const quat * f, const quat *l, scalar t) {
 		scalar dot = vec4Dot((const vec4*)f, (const vec4*)l);
@@ -702,18 +712,14 @@ extern "C" {
 	MMATH_CONST transform transformIdentity = { {0,0,0}, {1,1,1}, {0,0,0,1} };
 	MMATH_INLINE void transformToMat4(mat4 *dest, const transform *t) {
 		mat4 ret = {
-			t->scale.x, 0,          0,          0,
-			0,          t->scale.y, 0,          0,
-			0,          0,          t->scale.z, 0,
-			t->pos.x,   t->pos.y,   t->pos.z,   1
+			t->scale.x, 0, 0, 0,
+			0, t->scale.y, 0, 0,
+			0, 0, t->scale.z, 0,
+			t->pos.x, t->pos.y, t->pos.z, 1
 		};
-		mat3 q;
-		quatToMat3(&q, &t->rot);
-
-		mat4 q4;
-		mat3ToMat4(&q4, &q);
-
-		mat4Mul(dest, &q4, &ret);
+		mat4 rotate;
+		quatToMat4(&rotate, &t->rot);
+		mat4Mul(dest, &rotate, &ret);
 	}
 	//TODO: Solve transform inverse
 	MMATH_INLINE void transformMul(transform *dest, const transform *a, const transform *b) {
