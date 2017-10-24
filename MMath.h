@@ -115,20 +115,28 @@ extern "C" {
 	#pragma endregion Types
 
 	#pragma region Helper_Functions
-	#define mm_sqrt(var) ((scalar)sqrt(var))
-	#define mm_acos(var) ((scalar)acos(var))
-	#define mm_asin(var) ((scalar)asin(var))
-	#define mm_atan(var) ((scalar)atan(var))
-	#define mm_cos(var)  ((scalar)cos(var))
-	#define mm_sin(var)  ((scalar)sin(var))
-	#define mm_tan(var)  ((scalar)tan(var))
-
 	#if defined(MMATH_DOUBLE)
+	#define mm_sqrt(var) (sqrt(var))
+	#define mm_acos(var) (acos(var))
+	#define mm_asin(var) (asin(var))
+	#define mm_atan(var) (atan(var))
+	#define mm_cos(var)  (cos(var))
+	#define mm_sin(var)  (sin(var))
+	#define mm_tan(var)  (tan(var))
 	#define mm_min(x, y) (fmin(x, y))
 	#define mm_max(x, y) (fmax(x, y))
+	#define mm_abs(var)  (fabs(var))
 	#else
+	#define mm_sqrt(var) (sqrtf(var))
+	#define mm_acos(var) (acosf(var))
+	#define mm_asin(var) (asinf(var))
+	#define mm_atan(var) (atanf(var))
+	#define mm_cos(var)  (cosf(var))
+	#define mm_sin(var)  (sinf(var))
+	#define mm_tan(var)  (tanf(var))
 	#define mm_min(x, y) (fminf(x, y))
 	#define mm_max(x, y) (fmaxf(x, y))
+	#define mm_abs(var)  (fabsf(var))
 	#endif
 
 	//constants
@@ -157,7 +165,7 @@ extern "C" {
 	#define MMATH_GENFUNC_VECABS(integer) \
 	MMATH_INLINE void vec##integer##Abs(vec##integer *dest, const vec##integer *a) { \
 		VEC_FOR(integer) { \
-			dest->data[i] = (scalar)fabs(a->data[i]); \
+			dest->data[i] = mm_abs(a->data[i]); \
 		} \
 	}
 	#define MMATH_GENFUNC_VECADDSCALAR(integer) \
@@ -333,6 +341,9 @@ extern "C" {
 	}
 	MMATH_INLINE void quatNormalize(quat *dest, const quat *a) {
 		vec4Normalize((vec4*)dest, (const vec4*)a);
+	}
+	MMATH_INLINE void quatAddScalar(quat *dest, const quat *a, scalar b) {
+		vec4AddScalar((vec4*)dest, (const vec4*)a, b);
 	}
 	MMATH_INLINE void quatMulScalar(quat *dest, const quat *a, scalar b) {
 		vec4MulScalar((vec4*)dest, (const vec4*)a, b);
@@ -641,7 +652,7 @@ extern "C" {
 		*dest = ret;
 	}
 	MMATH_INLINE void mat4Perspective(mat4 *dest, scalar aspect, scalar fovY, scalar zNear, scalar zFar) {
-		scalar f   = (scalar)1.0 / mm_tan(fovY * 0.5);
+		scalar f   = (scalar)1.0 / mm_tan(fovY * (scalar)0.5);
 		scalar nf  = (scalar)1.0 / (zNear - zFar);
 		mat4 ret = {
 			f/aspect, 0,  0,                0,
