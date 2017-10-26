@@ -240,7 +240,11 @@ extern "C" {
 	}
 	#define MMATH_GENFUNC_VECNORM(integer) \
 	MMATH_INLINE void vec##integer##Normalize(vec##integer *dest, const vec##integer *a) { \
-		scalar len = (scalar)1.0 / vec##integer##Length(a); \
+		scalar len = vec##integer##Length(a); \
+		if (len == 0) { \
+			return; \
+		} \
+		len = 1.f / len; \
 		VEC_FOR(integer) { \
 			dest->data[i] = a->data[i] * len; \
 		} \
@@ -527,7 +531,7 @@ extern "C" {
 		} \
 	}
 	#define MMATH_GENFUNC_MATMULVEC(integer) \
-	MMATH_INLINE vec##integer mat##integer##MulVec##integer(vec##integer *dest, const mat##integer *a, const vec##integer *b) { \
+	MMATH_INLINE void mat##integer##MulVec##integer(vec##integer *dest, const mat##integer *a, const vec##integer *b) { \
 		memset(dest, 0x0, sizeof(vec##integer)); \
 		VEC_FOR(integer) { \
 			for (int c = 0; c < integer; c++) { \
@@ -593,6 +597,9 @@ extern "C" {
 		};
 		*dest = ret;
 	}
+	//MMATH_INLINE void mat3Inverse(mat3 *dest, const mat3 *a) {
+	//	mat3 ret; TODO: also make this
+	//}
 	MMATH_INLINE void mat3RotateX(mat3 *dest, scalar r) {
 		scalar c = mm_cos(r);
 		scalar s = mm_sin(r);
