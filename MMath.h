@@ -2,21 +2,21 @@
 #define MMATH_HEADER_FILE
 
 /* MMath.h -- MMath library file
- * 
+ *
  * Copyright (C) 2017 Zachary Wells
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
 
+#include <math.h>
+#include <memory.h>
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-	#include <math.h>
-	#include <memory.h>
-
-	#define MMATH_INLINE inline
+	#define MMATH_INLINE static inline
 	#define MMATH_CONST static const
 
 	//Types
@@ -364,7 +364,7 @@ extern "C" {
 		vec3 AwBv;
 		vec3MulScalar(&AwBv, &b->axis, a->w);
 
-		vec3 abv; 
+		vec3 abv;
 		vec3Add(&abv, &BwAv, &AwBv);
 
 		vec3 AxB;
