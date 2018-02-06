@@ -54,7 +54,7 @@ extern "C" {
 			scalar data[4];
 			vec4 vec;
 			vec3 axis;
-			struct { float x, y, z, w; };
+			struct { scalar x, y, z, w; };
 		};
 	} quat;
 
@@ -468,7 +468,7 @@ extern "C" {
 			*dest = *l;
 		}
 
-		if (dot < (float)0.95) {
+		if (dot < (scalar)0.95) {
 			scalar angle = mm_acos(dot);
 			quat fp;
 			quatMulScalar(&fp, f, mm_sin(angle * (1 - t)));
