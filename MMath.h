@@ -10,7 +10,6 @@
  */
 
 #include <math.h>
-#include <memory.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -498,7 +497,7 @@ extern "C" {
 	}
 	#define MMATH_GENFUNC_MATDIAG(integer) \
 	MMATH_INLINE void mat##integer##Diagonal(mat##integer *dest, scalar f) { \
-		memset(dest, 0x0, sizeof(mat##integer)); \
+		*dest = (mat##integer) {0}; \
 		for (int i = 0; i < integer * integer; i += integer + 1) { \
 			dest->data[i] = f; \
 		} \
