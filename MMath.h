@@ -411,7 +411,7 @@ extern "C" {
 	MMATH_INLINE quat* quatInverse(quat *dest, const quat *a) {
 		quatConjugate(dest, a);
 		scalar length = quatLength(a);
-		if (length != (scalar)1.0) {
+		if (length - ((scalar)1.0) <= 0.00001) {
 			scalar l2 = (scalar)1.0 / (length * length);
 			dest->x *= l2;
 			dest->y *= l2;
@@ -719,15 +719,15 @@ extern "C" {
 		vec3Cross(&temp, &z, &x);
 		vec3Normalize(&y, &temp);
 
-		scalar ndotx = -vec3Dot(&x, eye);
-		scalar ndoty = -vec3Dot(&y, eye);
-		scalar ndotz = -vec3Dot(&z, eye);
+		scalar n_dot_x = -vec3Dot(&x, eye);
+		scalar n_dot_y = -vec3Dot(&y, eye);
+		scalar n_dot_z = -vec3Dot(&z, eye);
 
 		mat4 ret = {
 			x.x,   y.x,   z.x,   0,
 			x.y,   y.y,   z.y,   0,
 			x.z,   y.z,   z.z,   0,
-			ndotx, ndoty, ndotz, 1
+			n_dot_x, n_dot_y, n_dot_z, 1
 		};
 		*dest = ret;
 		return dest;
